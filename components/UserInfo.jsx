@@ -266,49 +266,107 @@ const UserInfo = () => {
     setCurrentTopicIndex(index);
   };
 
-  const renderQuestionContent = (rawQuestion) => {
-    let question = rawQuestion;
-
-    try {
-      if (typeof rawQuestion === "string") {
-        question = JSON.parse(rawQuestion);
+const renderQuestionContent = (rawQuestion) => {
+  // --- 1) Parse (handles string or already-parsed array) ---
+  let question = rawQuestion;
+  try {
+    if (typeof question === "string") {
+      question = JSON.parse(question);
+      if (typeof question === "string" && /^\s*[\[\{]/.test(question)) {
+        question = JSON.parse(question);
       }
-    } catch (err) {
-      return <p className="text-red-500">Invalid question format</p>;
     }
+  } catch (_err) {
+    return <p className="text-red-500">Invalid question format</p>;
+  }
 
-    if (!Array.isArray(question) || question.length !== 2) {
-      return <p>{String(question)}</p>; // fallback
+  if (!Array.isArray(question) || question.length !== 2) {
+    return <p>{String(question)}</p>; // fallback
+  }
+
+  const [profileText, dialogueObj] = question;
+  const dialogues = dialogueObj?.dialogue || [];
+
+  // --- 2) Pretty format the profile text into sections ---
+  const lines = String(profileText)
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  const isHeader = (l) =>
+    /^(Patient Profile:|Stage of Change:|Intrapersonal Factors:|Interpersonal Factors:|Health Belief Factors:|Patient age:)\s*/i.test(
+      l
+    );
+
+  const sections = [];
+  let current = { title: "Patient Profile", items: [] };
+
+  lines.forEach((line) => {
+    if (isHeader(line)) {
+      if (current.items.length) sections.push(current);
+
+      const title = line.replace(/\s*:\s*$/, "");
+      current = { title, items: [] };
+    } else {
+      current.items.push(line.replace(/^\-\s*/, "").trim());
     }
+  });
 
-    const [profileText, dialogueObj] = question;
-    const dialogues = dialogueObj?.dialogue || [];
+  if (current.items.length || sections.length === 0) sections.push(current);
 
-    return (
-      <div className="space-y-4">
-        <pre className="whitespace-pre-wrap text-sm bg-blue-50 p-3 rounded-md border border-blue-200">
-          {profileText}
-        </pre>
-
-        <div className="space-y-2">
-          {dialogues.map((item, idx) => (
-            <div key={idx} className="space-y-1">
-              {item.assistant && (
-                <div className="bg-green-100 p-2 rounded-md text-sm">
-                  <strong>Assistant:</strong> {item.assistant}
-                </div>
+  // --- 3) Render ---
+  return (
+    <div className="space-y-6">
+      {/* Patient Profile */}
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <h3 className="font-semibold text-blue-800 mb-2">Patient Profile</h3>
+        <div className="space-y-3">
+          {sections.map((sec, i) => (
+            <div key={i}>
+              {sec.title && sec.title !== "Patient Profile" && (
+                <h4 className="font-medium text-blue-700 mb-1">{sec.title}</h4>
               )}
-              {item.user && (
-                <div className="bg-gray-100 p-2 rounded-md text-sm">
-                  <strong>User:</strong> {item.user}
-                </div>
+
+              {/* special case for Patient age */}
+              {sec.title === "Patient age" ? (
+                <p className="text-sm text-gray-700">
+                  {sec.items.join(" ").replace(/\s+/g, " ").trim()}
+                </p>
+              ) : (
+                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                  {sec.items.map((it, j) => (
+                    <li key={j}>{it}</li>
+                  ))}
+                </ul>
               )}
             </div>
           ))}
         </div>
       </div>
-    );
-  };
+
+      {/* Dialogue */}
+      <div className="space-y-4">
+        <h3 className="font-semibold text-gray-800">Dialogue</h3>
+        {dialogues.map((item, idx) => (
+          <div key={idx} className="space-y-2">
+            {item.assistant && (
+              <div className="bg-green-100 p-3 rounded-md text-sm">
+                <strong className="text-green-800">Assistant:</strong>{" "}
+                {item.assistant}
+              </div>
+            )}
+            {item.user && (
+              <div className="bg-gray-100 p-3 rounded-md text-sm">
+                <strong className="text-gray-800">User:</strong> {item.user}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
   return (
     <>
@@ -376,11 +434,12 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Did the model provide accurate information in general?
+                  <b>1 )</b> Did the model provide accurate information in
+                  general?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -388,7 +447,14 @@ const UserInfo = () => {
                       checked={score1 === "-1"}
                       onChange={handleScore1Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i>
+                        {" "}
+                        ( No - most or all of the information provided by the
+                        model was inaccurate.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -398,7 +464,14 @@ const UserInfo = () => {
                       checked={score1 === "0"}
                       onChange={handleScore1Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i>
+                        {" "}
+                        ( There was no information provided by the model to
+                        assess accuracy.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -408,7 +481,10 @@ const UserInfo = () => {
                       checked={score1 === "0.5"}
                       onChange={handleScore1Change}
                     />
-                    <span>0.5</span>
+                    <span>
+                      <b>0.5</b>
+                      <i> (Some of the information was inaccurate.)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -418,7 +494,14 @@ const UserInfo = () => {
                       checked={score1 === "1"}
                       onChange={handleScore1Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i>
+                        {" "}
+                        (Based on the coder's best judgement, all of the
+                        information was accurate.)
+                      </i>
+                    </span>
                   </label>
                 </div>
 
@@ -434,11 +517,12 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Did the model provide accurate cancer screening information?
+                  <b>2 )</b> Did the model provide accurate cancer screening
+                  information?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -446,7 +530,10 @@ const UserInfo = () => {
                       checked={score2 === "-1"}
                       onChange={handleScore2Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i> (No - the model provided inaccurate information.)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -456,7 +543,14 @@ const UserInfo = () => {
                       checked={score2 === "0"}
                       onChange={handleScore2Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i>
+                        {" "}
+                        (The model did not recommend cancer screening specific
+                        to the user's profile.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -466,7 +560,15 @@ const UserInfo = () => {
                       checked={score2 === "0.5"}
                       onChange={handleScore2Change}
                     />
-                    <span>0.5</span>
+                    <span>
+                      <b>0.5</b>
+                      <i>
+                        {" "}
+                        (Partly - the model provided some accurate screening
+                        information and some inaccurate OR THE MODEL PROVIDED
+                        NON-SPECIFIC CANCER SCREENING RECOMMENDATION.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -476,7 +578,14 @@ const UserInfo = () => {
                       checked={score2 === "1"}
                       onChange={handleScore2Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i>
+                        {" "}
+                        (Yes - the model provided only accurate information
+                        about cancer screening guidelines.)
+                      </i>
+                    </span>
                   </label>
                 </div>
 
@@ -492,11 +601,11 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Did the model ask at least one question to the client?
+                  <b>3 )</b> Did the model completely respond to the client's questions?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -504,7 +613,15 @@ const UserInfo = () => {
                       checked={score3 === "-1"}
                       onChange={handleScore3Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i>
+                        {" "}
+                        (No, the model asked no questions or only questions
+                        irrelevant to cancer screening including barriers and
+                        opportunities.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -514,7 +631,25 @@ const UserInfo = () => {
                       checked={score3 === "0"}
                       onChange={handleScore3Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i> (Unclear or unable to determine.)</i>
+                    </span>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value="0.5"
+                      checked={score3 === "0.5"}
+                      onChange={handleScore3Change}
+                    />
+                    <span>
+                      <b>0.5</b>
+                      <i>
+                        {" "}
+                        (Partly - the model provided some accurate screening information and some inaccurate OR THE MODEL PROVIDED NON-SPECIFIC CANCER SCREENING RECOMMENDATION.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -524,7 +659,15 @@ const UserInfo = () => {
                       checked={score3 === "1"}
                       onChange={handleScore3Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i>
+                        {" "}
+                        (Yes - the model asked at least one question to the user
+                        to get more information that would help with cancer
+                        screening recommendations.)
+                      </i>
+                    </span>
                   </label>
                 </div>
 
@@ -540,11 +683,12 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Does the model acknowledge the emotion of the client?
+                  <b>4 )</b> Does the model acknowledge the emotion of the
+                  client?[emotion]
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -552,7 +696,10 @@ const UserInfo = () => {
                       checked={score4 === "-1"}
                       onChange={handleScore4Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i> (No)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -562,7 +709,23 @@ const UserInfo = () => {
                       checked={score4 === "0"}
                       onChange={handleScore4Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i> (Not able to assess)</i>
+                    </span>
+                  </label>
+
+                  <label>
+                    <input
+                      type="radio"
+                      value="0.5"
+                      checked={score4 === "0.5"}
+                      onChange={handleScore4Change}
+                    />
+                    <span>
+                      <b>0.5</b>
+                      <i> (Partially - the model did address the emotions of the client but not comprehensively.)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -572,7 +735,10 @@ const UserInfo = () => {
                       checked={score4 === "1"}
                       onChange={handleScore4Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i> (Yes)</i>
+                    </span>
                   </label>
                 </div>
 
@@ -588,12 +754,13 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Does the model track with the conversation, i.e., follows the
-                  turns with the client and responds appropriately?
+                  <b>5 )</b> Does the model track with the conversation, i.e.,
+                  follows the turns with the client and responds
+                  appropriately?[engagement]
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -601,7 +768,10 @@ const UserInfo = () => {
                       checked={score5 === "-1"}
                       onChange={handleScore5Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i> (No)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -611,7 +781,10 @@ const UserInfo = () => {
                       checked={score5 === "0"}
                       onChange={handleScore5Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i> (Not able to assess)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -621,7 +794,10 @@ const UserInfo = () => {
                       checked={score5 === "0.5"}
                       onChange={handleScore5Change}
                     />
-                    <span>0.5</span>
+                    <span>
+                      <b>0.5</b>
+                      <i> (Partly)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -631,7 +807,10 @@ const UserInfo = () => {
                       checked={score5 === "1"}
                       onChange={handleScore5Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i> (Yes)</i>
+                    </span>
                   </label>
                 </div>
 
@@ -647,11 +826,11 @@ const UserInfo = () => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  Does the model show concern for the client?
+                  <b>6 )</b> Does the model show concern for the client?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
-                <div className="flex">
+                <div className="flex flex-col">
                   <label>
                     <input
                       type="radio"
@@ -659,7 +838,15 @@ const UserInfo = () => {
                       checked={score6 === "-1"}
                       onChange={handleScore6Change}
                     />
-                    <span>-1</span>
+                    <span>
+                      <b>-1</b>
+                      <i>
+                        {" "}
+                        (No - the model makes argumentative or defensive
+                        statements, uses jabs or sarcasm, or doesn't establish
+                        rapport.)
+                      </i>
+                    </span>
                   </label>
 
                   <label>
@@ -669,7 +856,22 @@ const UserInfo = () => {
                       checked={score6 === "0"}
                       onChange={handleScore6Change}
                     />
-                    <span>0</span>
+                    <span>
+                      <b>0</b>
+                      <i> (Unable to assess.)</i>
+                    </span>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value="0.5"
+                      checked={score4 === "0.5"}
+                      onChange={handleScore4Change}
+                    />
+                    <span>
+                      <b>0.5</b>
+                      <i> (Partially - the model showed some concern for the client.)</i>
+                    </span>
                   </label>
 
                   <label>
@@ -679,7 +881,10 @@ const UserInfo = () => {
                       checked={score6 === "1"}
                       onChange={handleScore6Change}
                     />
-                    <span>1</span>
+                    <span>
+                      <b>1</b>
+                      <i> (Yes - the model shows concern for the client.)</i>
+                    </span>
                   </label>
                 </div>
 
