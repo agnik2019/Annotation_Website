@@ -865,8 +865,8 @@ const renderQuestionContent = (rawQuestion) => {
                     <input
                       type="radio"
                       value="0.5"
-                      checked={score4 === "0.5"}
-                      onChange={handleScore4Change}
+                      checked={score6 === "0.5"}
+                      onChange={handleScore6Change}
                     />
                     <span>
                       <b>0.5</b>
