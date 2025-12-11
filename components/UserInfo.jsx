@@ -451,8 +451,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>-1</b>
                       <i>
                         {" "}
-                        ( No - most or all of the information provided by the
-                        model was inaccurate.)
+                        ( Most or all of the information provided by the model was inaccurate.)
                       </i>
                     </span>
                   </label>
@@ -468,8 +467,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>0</b>
                       <i>
                         {" "}
-                        ( There was no information provided by the model to
-                        assess accuracy.)
+                        ( There was no information provided by the model to assess accuracy. )
                       </i>
                     </span>
                   </label>
@@ -483,7 +481,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0.5</b>
-                      <i> (Some of the information was inaccurate.)</i>
+                      <i> (Some, but not all, of the information was inaccurate.)</i>
                     </span>
                   </label>
 
@@ -498,8 +496,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>1</b>
                       <i>
                         {" "}
-                        (Based on the coder's best judgement, all of the
-                        information was accurate.)
+                        (All of the information was accurate, based on the coder’s best judgement.)
                       </i>
                     </span>
                   </label>
@@ -532,7 +529,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>-1</b>
-                      <i> (No - the model provided inaccurate information.)</i>
+                      <i> (Most or all of the information provided by the model was inaccurate.)</i>
                     </span>
                   </label>
 
@@ -547,8 +544,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>0</b>
                       <i>
                         {" "}
-                        (The model did not recommend cancer screening specific
-                        to the user's profile.)
+                        (The model did not provide any cancer screening information.)
                       </i>
                     </span>
                   </label>
@@ -564,9 +560,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>0.5</b>
                       <i>
                         {" "}
-                        (Partly - the model provided some accurate screening
-                        information and some inaccurate OR THE MODEL PROVIDED
-                        NON-SPECIFIC CANCER SCREENING RECOMMENDATION.)
+                        ( Some of the screening information was inaccurate OR the model provided non-specific cancer screening recommendations OR it provided a current recommendation but not what is needed in the future)
                       </i>
                     </span>
                   </label>
@@ -582,8 +576,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>1</b>
                       <i>
                         {" "}
-                        (Yes - the model provided only accurate information
-                        about cancer screening guidelines.)
+                        (All of the information was accurate, based on the screening guidelines detailed below.)
                       </i>
                     </span>
                   </label>
@@ -601,7 +594,7 @@ const renderQuestionContent = (rawQuestion) => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  <b>3 )</b> Did the model completely respond to the client's questions?
+                  <b>3 )</b> Did the model completely respond to the patient’s questions?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
@@ -617,9 +610,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>-1</b>
                       <i>
                         {" "}
-                        (No, the model asked no questions or only questions
-                        irrelevant to cancer screening including barriers and
-                        opportunities.)
+                        (The model did not respond to any of the patient’s questions.)
                       </i>
                     </span>
                   </label>
@@ -647,7 +638,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>0.5</b>
                       <i>
                         {" "}
-                        (Partly - the model provided some accurate screening information and some inaccurate OR THE MODEL PROVIDED NON-SPECIFIC CANCER SCREENING RECOMMENDATION.)
+                        (The model addressed some but not all of the patient’s questions.)
                       </i>
                     </span>
                   </label>
@@ -663,9 +654,7 @@ const renderQuestionContent = (rawQuestion) => {
                       <b>1</b>
                       <i>
                         {" "}
-                        (Yes - the model asked at least one question to the user
-                        to get more information that would help with cancer
-                        screening recommendations.)
+                        (The model addressed all of the patient’s questions.)
                       </i>
                     </span>
                   </label>
@@ -683,8 +672,7 @@ const renderQuestionContent = (rawQuestion) => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  <b>4 )</b> Does the model acknowledge the emotion of the
-                  client?[emotion]
+                  <b>4 )</b> Did the model acknowledge the emotion of the patient?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
@@ -698,7 +686,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>-1</b>
-                      <i> (No)</i>
+                      <i> (The model ignored or did not address the emotions of the patient.)</i>
                     </span>
                   </label>
 
@@ -711,7 +699,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0</b>
-                      <i> (Not able to assess)</i>
+                      <i> (No emotions were presented by the client, or otherwise unable to assess.)</i>
                     </span>
                   </label>
 
@@ -724,7 +712,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0.5</b>
-                      <i> (Partially - the model did address the emotions of the client but not comprehensively.)</i>
+                      <i> (The model partially addressed the emotions of the patient but not comprehensively.)</i>
                     </span>
                   </label>
 
@@ -737,7 +725,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>1</b>
-                      <i> (Yes)</i>
+                      <i> (All of the emotions were addressed by the model.)</i>
                     </span>
                   </label>
                 </div>
@@ -754,9 +742,7 @@ const renderQuestionContent = (rawQuestion) => {
             <div className="justify-center space-y-2 p-3">
               <div className="space-x-3 text-md">
                 <h2 className="bg-gray-200 p-2 w-fit rounded-md mb-1">
-                  <b>5 )</b> Does the model track with the conversation, i.e.,
-                  follows the turns with the client and responds
-                  appropriately?[engagement]
+                  <b>5 )</b> Does the model track with the conversation? I.e., follows the turns with the client and responds appropriately?
                 </h2>
               </div>
               <form className="flex bg-stone-200 flex-col border border-dashed border-gray-600 rounded p-3 flex-grow">
@@ -770,7 +756,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>-1</b>
-                      <i> (No)</i>
+                      <i> (The model completely hallucinates or otherwise does not follow any of the conversation.)</i>
                     </span>
                   </label>
 
@@ -783,7 +769,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0</b>
-                      <i> (Not able to assess)</i>
+                      <i> (Unable to assess.)</i>
                     </span>
                   </label>
 
@@ -796,7 +782,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0.5</b>
-                      <i> (Partly)</i>
+                      <i> (The model shows some coherent responses but also includes inappropriate interactions with the patient.)</i>
                     </span>
                   </label>
 
@@ -809,7 +795,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>1</b>
-                      <i> (Yes)</i>
+                      <i> (The model completely follows the patient’s conversation and responds appropriately.)</i>
                     </span>
                   </label>
                 </div>
@@ -841,10 +827,7 @@ const renderQuestionContent = (rawQuestion) => {
                     <span>
                       <b>-1</b>
                       <i>
-                        {" "}
-                        (No - the model makes argumentative or defensive
-                        statements, uses jabs or sarcasm, or doesn't establish
-                        rapport.)
+                        (The model makes argumentative or defensive statements, uses jabs or sarcasm, or doesn’t establish rapport.)
                       </i>
                     </span>
                   </label>
@@ -870,7 +853,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>0.5</b>
-                      <i> (Partially - the model showed some concern for the client.)</i>
+                      <i> (The model shows some concern for the patient.)</i>
                     </span>
                   </label>
 
@@ -883,7 +866,7 @@ const renderQuestionContent = (rawQuestion) => {
                     />
                     <span>
                       <b>1</b>
-                      <i> (Yes - the model shows concern for the client.)</i>
+                      <i> (The model shows complete concern for the patient.)</i>
                     </span>
                   </label>
                 </div>
